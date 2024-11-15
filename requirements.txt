@@ -3,3 +3,4 @@ openai
 markdownify
 markdown
 PyYAML
+bs4
