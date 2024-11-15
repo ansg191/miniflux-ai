@@ -3,6 +3,7 @@ import time
 import traceback
 from common.logger import logger
 from core.entry_filter import filter_entry
+from core.image import contains_image
 
 import miniflux
 from markdownify import markdownify as md
@@ -20,8 +21,18 @@ def process_entry(entry):
     for agent in config['agents'].items():
         messages = [
             {"role": "system", "content": agent[1]['prompt']},
+            {"role": "user", "content": "The following is the title:\n---\n " + entry['title']},
+            {"role": "user", "content": "The following is the author:\n---\n " + entry['author']},
             {"role": "user", "content": "The following is the input content:\n---\n " + md(entry['content']) }
         ]
+
+        image_url = contains_image(entry['content'])
+        if image_url:
+            messages.append({"role": "user", "content": [
+                {"type": "text", "text": "The following is the first image in the content:"},
+                {"type": "image_url", "image_url": {"url": image_url}}
+            ]})
+
         # filter, if AI is not generating, and in allow_list, or not in deny_list
         if filter_entry(config, agent, entry):
             completion = llm_client.chat.completions.create(
