@@ -19,5 +19,7 @@ def contains_image(html: str) -> Optional[str]:
     soup = BeautifulSoup(html, "html.parser")
     image = soup.find("img", recursive=True)
     if image:
-        return image.get("src")
+        src = image.get("src")
+        if src and src.lower().split('.')[-1] in ['png', 'jpeg', 'gif', 'webp']:
+            return src
     return None
